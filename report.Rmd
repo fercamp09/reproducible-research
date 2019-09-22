@@ -1,0 +1,57 @@
+---
+title: "Report"
+author: "Fernando Campaña"
+date: "9/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Course Project 1
+
+### Loading and preprocessing the data
+
+```{r}
+activity <- read.csv("activity.csv")
+```
+
+### What is mean total number of steps taken per day? (Falta graficar en el hist, convertir factor (date) a fecha)
+```{r}
+library(dplyr)
+avg_steps_day <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarise(avg_steps = mean(steps))
+median_steps_day <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarise(median_steps = median(steps))
+total_steps_day <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarise(total_steps = sum(steps))
+
+hist(total_steps_day$total_steps)
+```
+
+### What is the average daily activity pattern?
+```{r}
+avg_steps_across_days <- activity %>% filter(!is.na(steps)) %>% group_by(interval) %>% summarise(avg_steps = mean(steps))
+plot(avg_steps_across_days, type = "l")
+max_step <- summarise(avg_steps_across_days, max_steps = max(avg_steps))
+max_row<- filter(avg_steps_across_days, avg_steps == max_step$max_steps)
+max_row$interval
+```
+
+### Imputing missing values
+```{r}
+nas <- activity %>% filter(is.na(steps) | is.na(interval) | is.na(date))
+
+new <- activity %>% mutate( steps = case_when(is.na(steps) & date == "2012-10-01" ~  0, 
+                                              is.na(steps) & date == "2012-10-02" ~  0.438,
+                                              is.na(steps) & date == "2012-10-03" ~  39.4 ,
+                                              is.na(steps) & date == "2012-10-04" ~  42.1,
+                                              is.na(steps) & date == "2012-10-05" ~  46.2,
+                                              is.na(steps) & date == "2012-10-06" ~  53.5,
+                                              is.na(steps) & date == "2012-10-07" ~  38.2,
+                                              is.na(steps) & date == "2012-10-08" ~  0,
+                                              is.na(steps) & date == "2012-10-09" ~  44.5,
+                                              is.na(steps) & date == "2012-10-10" ~  34.4,
+                                              is.na(steps) & date == "2012-10-11" ~  35.8,
+                                              is.na(steps) & date == "2012-10-12" ~  60.4))
+```
+
+### Are there differences in activity patterns between weekdays and weekends?
